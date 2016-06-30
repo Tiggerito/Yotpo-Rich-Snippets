@@ -1,7 +1,7 @@
 # Yotpo
 Yotpo Rich Snippet Solutions
 
-The JavaScript must be added or included after the point where the Yotpo placeholder is added (I'd recommend just before the </body>). By default it looks for the Yotpo placeholder using the following css selectors:
+The JavaScript must be added or included after the point where the Yotpo placeholder is added (I'd recommend just before the end body tag). By default it looks for the Yotpo placeholder using the following css selectors:
 
 .yotpo-main-widget
 .yotpo.placeholder
