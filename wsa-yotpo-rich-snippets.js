@@ -4,7 +4,7 @@ https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
 Copyright (C) 2016 Web Site Advantage
 */
 var wsa_yotpoPlaceHolder = ".yotpo-main-widget";
-var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
+var wsa_yotpoSdFormat = "microdata"; // microdata, json-ld
 // -HEADING-
 
 // Place this code after the placeholder element for Yotpo has been created. e.g. in the footer.
