@@ -1,10 +1,15 @@
-// Adding Schema.org rating and review markup to Yotpo 
-// By Tony McCreath (Web Site Advantage)
-// https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
+/*
+Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.0]
+https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
+Copyright (C) 2016 Web Site Advantage
+*/
+var wsa_yotpoPlaceHolder = ".yotpo-main-widget";
+var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
+// -HEADING-
+
 // Place this code after the placeholder element for Yotpo has been created. e.g. in the footer.
 // The reason is that this code has to listen for Yotpo adding its stuff to the placeholder. So it has to attach to the placeholder before Yotpo has a go at it.
 // ***** To make it more accurate I suggest changing the display date format to YYYY-MM_DD in the Yotpo Widget General Settings.
-
 var webSiteAdvantage = webSiteAdvantage || {};
 webSiteAdvantage.yotpoRichSnippets = webSiteAdvantage.yotpoRichSnippets  || [];
 
@@ -13,7 +18,8 @@ webSiteAdvantage.yotpoRichSnippets = function (yotpoPlaceHolder) {
 };
 webSiteAdvantage.yotpoRichSnippets.prototype = {
 	// constants
-	yotpoPlaceHolder: ".yotpo-main-widget", 
+	yotpoPlaceHolder: wsa_yotpoPlaceHolder, 
+	format: wsa_yotpoSdFormat, // microdata, json-ld
 	
 	// call to enable the widget
 	constructor: webSiteAdvantage.yotpoRichSnippets,
@@ -121,22 +127,48 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 			// console.log('yotpoRichSnippets: Rating '+ratingValue);
 			
 			if (reviewCount > 0) {
-			
-				var aggregateRatingElement = document.querySelector('.yotpo-stars-and-sum-reviews');
-				if (aggregateRatingElement != null) {
-					aggregateRatingElement.setAttribute('id','yotpo-aggregate-rating');
-					aggregateRatingElement.setAttribute('itemprop','aggregateRating');
-					aggregateRatingElement.setAttribute('itemscope','');
-					aggregateRatingElement.setAttribute('itemtype','http://schema.org/AggregateRating');
+
+				var url = window.location.href;
+				var canonicalTag = document.querySelector("link[rel='canonical']");
+				if (canonicalTag) {
+					url = canonicalTag.getAttribute("href");
 				}
-				else
-					console.log('yotpoRichSnippets: Failed to find aggregateRating Element');
-				
-				this._addItemProps(aggregateRatingElement, '.based-on', 'reviewCount', reviewCount);		
-				this._addItemProps(aggregateRatingElement, '.yotpo-stars-and-sum-reviews .yotpo-stars', 'ratingValue', ratingValue);
-						
-				this._appendItemPropMetaTag(aggregateRatingElement, 'worstRating', '1');
-				this._appendItemPropMetaTag(aggregateRatingElement, 'bestRating', '5');
+
+				var jsonLd = {
+					"@context": "http://schema.org/",
+					"@type": "Product",
+					"@id": url+"#Product",
+					"review": []
+
+				};
+			
+				if (this.format == "microdata") {
+					var aggregateRatingElement = document.querySelector('.yotpo-stars-and-sum-reviews');
+					if (aggregateRatingElement != null) {
+						aggregateRatingElement.setAttribute('id','yotpo-aggregate-rating');
+						aggregateRatingElement.setAttribute('itemprop','aggregateRating');
+						aggregateRatingElement.setAttribute('itemscope','');
+						aggregateRatingElement.setAttribute('itemtype','http://schema.org/AggregateRating');
+					}
+					else
+						console.log('yotpoRichSnippets: Failed to find aggregateRating Element');
+					
+					this._addItemProps(aggregateRatingElement, '.based-on', 'reviewCount', reviewCount);		
+					this._addItemProps(aggregateRatingElement, '.yotpo-stars-and-sum-reviews .yotpo-stars', 'ratingValue', ratingValue);
+							
+					this._appendItemPropMetaTag(aggregateRatingElement, 'worstRating', '1');
+					this._appendItemPropMetaTag(aggregateRatingElement, 'bestRating', '5');
+				}
+
+				if (this.format == "json-ld") {
+					jsonLd.aggregateRating = {
+						"@type": "AggregateRating",
+						"worstRating": "1",
+						"bestRating": "5",
+						"ratingValue": ratingValue,
+						"reviewCount": reviewCount
+					};
+				}
 				
 				var reviewElements = this._yotpoPlaceHolderElement.querySelectorAll('.yotpo-review');
 				
@@ -147,30 +179,67 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 					var reviewElement = reviewElements[r];
 					
 					if (!reviewElement.classList.contains( "yotpo-hidden" )) {
-						reviewElement.setAttribute('itemprop','review');
-						reviewElement.setAttribute('itemscope','');
-						reviewElement.setAttribute('itemtype','http://schema.org/Review');
-						
+						if (this.format == "microdata") {
+							reviewElement.setAttribute('itemprop','review');
+							reviewElement.setAttribute('itemscope','');
+							reviewElement.setAttribute('itemtype','http://schema.org/Review');
+						}	
 						var reviewRatingElement = reviewElement.querySelector(".yotpo-review-stars");
+
+						var rating = "";
 						
 						if (reviewRatingElement != null) {
-							reviewRatingElement.setAttribute('itemprop','reviewRating'); 
-							reviewRatingElement.setAttribute('itemscope','');
-							reviewRatingElement.setAttribute('itemtype','http://schema.org/Rating');
+							if (this.format == "microdata") {
+								reviewRatingElement.setAttribute('itemprop','reviewRating'); 
+								reviewRatingElement.setAttribute('itemscope','');
+								reviewRatingElement.setAttribute('itemtype','http://schema.org/Rating');
+							}
 
-							var rating = reviewElement.querySelectorAll(".yotpo-icon-star").length;
+							rating = reviewElement.querySelectorAll(".yotpo-icon-star").length;
 							
-							this._appendItemPropMetaTag(reviewRatingElement, 'ratingValue', rating);
+							if (this.format == "microdata")
+								this._appendItemPropMetaTag(reviewRatingElement, 'ratingValue', rating);
 						}
 						else
 							console.log('yotpoRichSnippets: Failed to find reviewRating Element for review '+i);
 						
-						this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .yotpo-user-name', 'author');
-						this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .content-title .yotpo-font-bold', 'name');
-						this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-main .content-review', 'reviewBody');
-						this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .yotpo-review-date', 'datePublished');
+						if (this.format == "microdata") {
+							this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .yotpo-user-name', 'author');
+							this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .content-title .yotpo-font-bold', 'name');
+							this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-main .content-review', 'reviewBody');
+							this._addItemProps(reviewElement, 'div[itemprop="review"] > .yotpo-header .yotpo-review-date', 'datePublished');
+						}
+						if (this.format == "json-ld") {
+							var author = this._getInnerHTML(reviewElement, 'div > .yotpo-header .yotpo-user-name');
+							var name = this._getInnerHTML(reviewElement, 'div > .yotpo-header .content-title .yotpo-font-bold');
+							var reviewBody = this._getInnerHTML(reviewElement, 'div > .yotpo-main .content-review');
+							var datePublished = this._getInnerHTML(reviewElement, 'div > .yotpo-header .yotpo-review-date');
+							jsonLd.review.push({
+								"@type": "Review",
+								"author": {
+									"@type": "Person",
+									"name": author
+								},
+								"reviewRating": {
+									"@type": "Rating",
+									"ratingValue": rating
+								},
+								"name": name,
+								"reviewBody": reviewBody,
+								"datePublished": datePublished
+
+							});
+						}
 					}
 				} 
+
+				if (this.format == "json-ld") {
+					var aggregateRatingScriptElement = document.createElement('script');
+					aggregateRatingScriptElement.type = 'application/ld+json';
+					aggregateRatingScriptElement.setAttribute("id", "wsa-yotpo-json-id");
+					aggregateRatingScriptElement.text = JSON.stringify(jsonLd);
+					document.querySelector('head').appendChild(aggregateRatingScriptElement);
+				}
 			}
 		} catch(err) {
 			console.log('yotpoRichSnippets: _addMarkup Error: '+err.message); // not critical, as long as Googlebot does not cause it
@@ -191,6 +260,13 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 			if (typeof content !== 'undefined' && content != null)
 				element.setAttribute('content',content);
 		} 
+	},
+	_getInnerHTML: function (baseElement, selector) {
+		var elements = baseElement.querySelectorAll(selector);
+		if (elements.length > 0) { 
+			return elements[0].innerHTML;	
+		} 
+		return "";
 	}
 };
 
