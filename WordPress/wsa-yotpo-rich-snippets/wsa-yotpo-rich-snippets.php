@@ -3,7 +3,7 @@
 	Plugin Name: Yotpo Rich Snippets
 	Description: Add structured data to the Yotpo widget so that Google can display review rich snippets. aka review stars.
 	Author: Web Site Advantage
-	Version: 1.0.0
+	Version: 1.0.1
 	Author URI: https://websiteadvantage.com.au/?utm_source=Yotpo-Rich-Snippets-WordPress-Plugin&utm_medium=WordPress-Plugin-Page-Link&utm_campaign=Yotpo-Rich-Snippets-WordPress-Plugin	
 	Plugin URI: https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets?utm_source=Yotpo-Rich-Snippets-WordPress-Plugin&utm_medium=WordPress-Plugin-Page-Link&utm_campaign=Yotpo-Rich-Snippets-WordPress-Plugin
  */

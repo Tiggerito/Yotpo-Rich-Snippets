@@ -1,5 +1,5 @@
 /*
-Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.0]
+Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.1]
 https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
 Copyright (C) 2016 Web Site Advantage
 */
@@ -10,6 +10,9 @@ var wsa_yotpoSdFormat = "microdata"; // microdata, json-ld
 // Place this code after the placeholder element for Yotpo has been created. e.g. in the footer.
 // The reason is that this code has to listen for Yotpo adding its stuff to the placeholder. So it has to attach to the placeholder before Yotpo has a go at it.
 // ***** To make it more accurate I suggest changing the display date format to YYYY-MM_DD in the Yotpo Widget General Settings.
+
+// For BigCommerce Stencil place in the Footer Scripts inside {{#if page_type '===' 'product'}}<script> 
+
 var webSiteAdvantage = webSiteAdvantage || {};
 webSiteAdvantage.yotpoRichSnippets = webSiteAdvantage.yotpoRichSnippets  || [];
 
@@ -64,6 +67,9 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 				console.log('yotpoRichSnippets: Could not find yotpoPlaceHolder '+this.yotpoPlaceHolder);
 				console.log('yotpoRichSnippets: Failed');
 			}	
+
+
+
 		} catch(err) {
 			console.log('yotpoRichSnippets: initialise Error: '+err.message); // not critical, as long as Googlebot does not cause it
 		}
@@ -237,9 +243,17 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 					var aggregateRatingScriptElement = document.createElement('script');
 					aggregateRatingScriptElement.type = 'application/ld+json';
 					aggregateRatingScriptElement.setAttribute("id", "wsa-yotpo-json-id");
-					aggregateRatingScriptElement.text = JSON.stringify(jsonLd);
+					var inlineScript = document.createTextNode(JSON.stringify(jsonLd));
+                    aggregateRatingScriptElement.appendChild(inlineScript);
 					document.querySelector('head').appendChild(aggregateRatingScriptElement);
 				}
+			}
+
+			var jsons = document.querySelectorAll("script[type='application/ld+json'].y-rich-snippet-script");
+			for (i = 0; i < jsons.length; ++i) {
+				var json = jsons[i];
+
+				json.parentNode.removeChild(json);
 			}
 		} catch(err) {
 			console.log('yotpoRichSnippets: _addMarkup Error: '+err.message); // not critical, as long as Googlebot does not cause it
