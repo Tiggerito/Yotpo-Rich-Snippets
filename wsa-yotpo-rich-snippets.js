@@ -51,7 +51,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 							for (i = 0; i < newNodes.length; i++) {
 								var node = newNodes[i];
 
-								if(typeof node.classList !== 'undefined' && node.classList.contains("yotpo-display-wrapper") ) {
+								if(typeof node.classList !== 'undefined' && node.classList.contains("yotpo-display-wrapper") && self._observer != null ) {
 									self._observer.disconnect();
 									self._observer = null;
 									self._addMarkup();
