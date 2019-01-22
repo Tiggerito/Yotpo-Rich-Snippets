@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+    <head>
+
+<link rel='canonical' href='https://www.crossrope.com/products/infinity-rope-system/get-strong-jump-rope-set' />
+
+<script>  
+    // url to get the yotpo review info
+ //   var yotpo_review_link = 'https://api.yotpo.com/v1/widget/4EWWlhD7P1plMKwTP9oihVAQ5YUJD5gswjJ6ApPG/products/173/reviews.json'; 
+
+    var yotpo_review_link = 'https://api.yotpo.com/v1/widget/4EWWlhD7P1plMKwTP9oihVAQ5YUJD5gswjJ6ApPG/products/{{product.id}}/reviews.json'; 
+
+    // work out the products url
+    var url = window.location.href;
+    var canonicalTag = document.querySelector("link[rel='canonical']");
+    if (canonicalTag) {
+        url = canonicalTag.getAttribute("href");
+    }
+
+    // create basic json-ld for the product
+    var jsonLd = {
+        "@context": "http://schema.org/",
+        "@type": "Product",
+        "@id": url+"#Product",
+        "review": []
+    };
+
+    // make the request for the review info
+    const request = new XMLHttpRequest();
+    request.open("GET", yotpo_review_link);
+    request.responseType = 'json';
+    
+    request.onload = function() {
+        if (request.status === 200) {
+            // good response, process it
+            var json = request.response;
+
+            // add totals
+            jsonLd.aggregateRating = {
+                "@type": "AggregateRating",
+                "worstRating": "1",
+                "bestRating": "5",
+                "ratingValue": json.response.bottomline.average_score,
+                "reviewCount": json.response.bottomline.total_review
+            };
+            
+            // add reviews
+            json.response.reviews.forEach(function(review, index) {
+                jsonLd.review.push({
+                    "@type": "Review",
+                    "author": {
+                        "@type": "Person",
+                        "name": review.user.display_name
+                    },
+                    "reviewRating": {
+                        "@type": "Rating",
+                        "ratingValue": review.score
+                    },
+                    "name": review.title,
+                    "reviewBody": review.content,
+                    "datePublished": review.created_at
+
+                });
+            });
+
+            // add json-ld to the page
+            var aggregateRatingScriptElement = document.createElement('script');
+            aggregateRatingScriptElement.type = 'application/ld+json';
+            aggregateRatingScriptElement.setAttribute("id", "wsa-yotpo-json-ld");
+            var inlineScript = document.createTextNode(JSON.stringify(jsonLd));
+            aggregateRatingScriptElement.appendChild(inlineScript);
+            document.querySelector('head').appendChild(aggregateRatingScriptElement);          
+        }
+    };
+    request.send();
+</script>
+
+</head> 
+<body>Hello</body>
+</html>

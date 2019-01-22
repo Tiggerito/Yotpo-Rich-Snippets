@@ -242,7 +242,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 				if (this.format == "json-ld") {
 					var aggregateRatingScriptElement = document.createElement('script');
 					aggregateRatingScriptElement.type = 'application/ld+json';
-					aggregateRatingScriptElement.setAttribute("id", "wsa-yotpo-json-id");
+					aggregateRatingScriptElement.setAttribute("id", "wsa-yotpo-json-ld");
 					var inlineScript = document.createTextNode(JSON.stringify(jsonLd));
                     aggregateRatingScriptElement.appendChild(inlineScript);
 					document.querySelector('head').appendChild(aggregateRatingScriptElement);
