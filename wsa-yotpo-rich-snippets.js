@@ -1,17 +1,17 @@
 /*
-Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.1]
+Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.2]
 https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
 Copyright (C) 2016 Web Site Advantage
 */
 var wsa_yotpoPlaceHolder = ".yotpo-main-widget";
-var wsa_yotpoSdFormat = "microdata"; // microdata, json-ld
+var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
 // -HEADING-
 
 // Place this code after the placeholder element for Yotpo has been created. e.g. in the footer.
 // The reason is that this code has to listen for Yotpo adding its stuff to the placeholder. So it has to attach to the placeholder before Yotpo has a go at it.
 // ***** To make it more accurate I suggest changing the display date format to YYYY-MM_DD in the Yotpo Widget General Settings.
 
-// For BigCommerce Stencil place in the Footer Scripts inside {{#if page_type '===' 'product'}}<script> 
+// For BigCommerce Stencil place in the Scripts Manager inside script tag and {{#if page_type '===' 'product'}}...{{/if}} ?????
 
 var webSiteAdvantage = webSiteAdvantage || {};
 webSiteAdvantage.yotpoRichSnippets = webSiteAdvantage.yotpoRichSnippets  || [];
@@ -52,6 +52,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 								var node = newNodes[i];
 
 								if(typeof node.classList !== 'undefined' && node.classList.contains("yotpo-display-wrapper") && self._observer != null ) {
+									// once only event, so remove
 									self._observer.disconnect();
 									self._observer = null;
 									self._addMarkup();
@@ -68,6 +69,24 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 				console.log('yotpoRichSnippets: Failed');
 			}	
 
+			// also observe changes to the head section
+			this._observerHead = new MutationObserver(function( mutations ) {
+				mutations.forEach(function( mutation ) {
+					var newNodes = mutation.addedNodes; // DOM NodeList
+					if( newNodes !== null ) { // If there are new nodes added
+						for (i = 0; i < newNodes.length; i++) {
+							var node = newNodes[i];
+
+							// if( node.nodeName === "SCRIPT" && node.getAttribute('type') === 'application/ld+json' && !node.id.startsWith("wsa-")) { // way to remove all bout ours
+							if(node.nodeName === "SCRIPT" && node.getAttribute('type') === 'application/ld+json' && typeof node.classList !== 'undefined' && node.classList.contains("y-rich-snippet-script") ) {
+								node.parentNode.removeChild(node);
+							}
+						}
+					} 
+				}); 
+			});
+
+			this._observerHead.observe(document.querySelector('head'), this._observerConfig);
 
 
 		} catch(err) {
@@ -76,6 +95,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 	},	
 	// private variables and functions
 	_markupAdded: false,
+	_observerHead: null,
 	_observer: null,
 	_observerConfig: { 
 		attributes: true, 
@@ -131,6 +151,9 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 			
 			// console.log('yotpoRichSnippets: Reviews '+reviewCount);
 			// console.log('yotpoRichSnippets: Rating '+ratingValue);
+
+			// document.querySelectorAll("head")[0].setAttribute("reviewCount", reviewCount);
+			// document.querySelectorAll("head")[0].setAttribute("ratingValue", ratingValue);
 			
 			if (reviewCount > 0) {
 
@@ -249,12 +272,18 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 				}
 			}
 
-			var jsons = document.querySelectorAll("script[type='application/ld+json'].y-rich-snippet-script");
-			for (i = 0; i < jsons.length; ++i) {
-				var json = jsons[i];
+			// now an observer removes thse as they get added. 
+			// var jsons = document.querySelectorAll("script[type='application/ld+json'].y-rich-snippet-script");
 
-				json.parentNode.removeChild(json);
-			}
+			// console.log('yotpoRichSnippets: jsons: '+jsons.length); 
+
+			// document.querySelectorAll("head")[0].setAttribute("jsons", jsons.length);
+
+			// for (i = 0; i < jsons.length; ++i) {
+			// 	var json = jsons[i];
+
+			// 	json.parentNode.removeChild(json);
+			// }
 		} catch(err) {
 			console.log('yotpoRichSnippets: _addMarkup Error: '+err.message); // not critical, as long as Googlebot does not cause it
 		}
