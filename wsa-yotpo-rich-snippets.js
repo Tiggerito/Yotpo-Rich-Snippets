@@ -11,6 +11,9 @@ var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
 // The reason is that this code has to listen for Yotpo adding its stuff to the placeholder. So it has to attach to the placeholder before Yotpo has a go at it.
 // ***** To make it more accurate I suggest changing the display date format to YYYY-MM_DD in the Yotpo Widget General Settings.
 
+// We had a case where the main widget element was added by JavaScript and getting results was intermitent. Seems the Yotpo widget sometimes failed to get added (Google Rendering)
+// bacuse its code ran before the one that added the element.
+
 // For BigCommerce Stencil place in the Scripts Manager inside script tag and {{#if page_type '===' 'product'}}...{{/if}} ?????
 
 var webSiteAdvantage = webSiteAdvantage || {};
@@ -86,6 +89,8 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 				}); 
 			});
 
+			// not sure. There may ba a chance that the widget is present before we observe.
+
 			this._observerHead.observe(document.querySelector('head'), this._observerConfig);
 
 
@@ -105,6 +110,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 	},
 	_yotpoPlaceHolderElement: null,
 	_getCount: function (rating) {
+		// This only works for the main widget.
 		var sElement = document.querySelector('.yotpo-distibutions-sum-reviews span[data-score-distribution="'+rating+'"]');
 	  
 		if (sElement != null) {
@@ -117,6 +123,7 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 	},
 	
 	_getReviewCount: function () {
+		// This only works for the main widget. Could potentially find cound from the smaller top widget as well.
 		var sElement = document.querySelector('.yotpo-reviews-nav-tab-sum');
 	
 		if (sElement != null) {
@@ -145,7 +152,8 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 			if (reviewCount == 0 ) {
 				// try without the widget. gets to the nearest 0.5
 				reviewCount = this._getReviewCount();
-			
+				
+				// ISSUE: This searches the whole dom so could pick up multiple widgets of data
 				ratingValue  = document.querySelectorAll('.yotpo-stars-and-sum-reviews .yotpo-stars .yotpo-icon-star').length + document.querySelectorAll('.yotpo-stars-and-sum-reviews .yotpo-stars .yotpo-icon-half-star').length/2; 	
 			}
 			
