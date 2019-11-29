@@ -1,5 +1,5 @@
 /*
-Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.2]
+Web Site Advantage: Adding Schema.org rating and review markup to Yotpo [v2.3]
 https://websiteadvantage.com.au/Yotpo-Product-Rating-Review-Rich-Snippets
 Copyright (C) 2016 Web Site Advantage
 */
@@ -7,9 +7,11 @@ var wsa_yotpoPlaceHolder = ".yotpo-main-widget";
 var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
 // -HEADING-
 
-// Place this code after the placeholder element for Yotpo has been created. e.g. in the footer.
+// Place the minified version of this after the placeholder element for Yotpo has been created. e.g. in the footer.
 // The reason is that this code has to listen for Yotpo adding its stuff to the placeholder. So it has to attach to the placeholder before Yotpo has a go at it.
 // ***** To make it more accurate I suggest changing the display date format to YYYY-MM_DD in the Yotpo Widget General Settings.
+
+// to minify: https://websiteadvantage.com.au/JavaScript-Compressor
 
 // We had a case where the main widget element was added by JavaScript and getting results was intermitent. Seems the Yotpo widget sometimes failed to get added (Google Rendering)
 // bacuse its code ran before the one that added the element.
@@ -232,7 +234,9 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 								reviewRatingElement.setAttribute('itemtype','http://schema.org/Rating');
 							}
 
-							rating = reviewElement.querySelectorAll(".yotpo-icon-star").length;
+							rating = reviewRatingElement.querySelectorAll(".yotpo-icon-star").length;
+
+							// reviewRatingElement.querySelector(".sr-only").innerHTML  // this returns something like "5 star ratings" so could be an alternate way to get the numbers
 							
 							if (this.format == "microdata")
 								this._appendItemPropMetaTag(reviewRatingElement, 'ratingValue', rating);
@@ -249,7 +253,21 @@ webSiteAdvantage.yotpoRichSnippets.prototype = {
 						if (this.format == "json-ld") {
 							var author = this._getInnerHTML(reviewElement, 'div > .yotpo-header .yotpo-user-name');
 							var name = this._getInnerHTML(reviewElement, 'div > .yotpo-header .content-title .yotpo-font-bold');
-							var reviewBody = this._getInnerHTML(reviewElement, 'div > .yotpo-main .content-review');
+
+							if (name === "") {
+								name = this._getInnerHTML(reviewElement, 'div > .yotpo-main .content-title.yotpo-font-bold'); // this may be the new way they structure the reviews
+							}
+
+							var reviewBody = this._getInnerHTML(reviewElement, 'div > .yotpo-main .content-review'); 
+
+							// have it stop at the first <span
+							var reviewBodyEndIndex  = reviewBody.indexOf("<span");
+                            
+                            if (reviewBodyEndIndex > -1)
+                            {
+                                reviewBody = reviewBody.substring(0, reviewBodyEndIndex); 
+							}
+							
 							var datePublished = this._getInnerHTML(reviewElement, 'div > .yotpo-header .yotpo-review-date');
 							jsonLd.review.push({
 								"@type": "Review",
