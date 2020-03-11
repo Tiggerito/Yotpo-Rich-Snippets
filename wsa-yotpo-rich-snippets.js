@@ -18,6 +18,8 @@ var wsa_yotpoSdFormat = "json-ld"; // microdata, json-ld
 
 // For BigCommerce Stencil place in the Scripts Manager inside script tag and {{#if page_type '===' 'product'}}...{{/if}} ?????
 
+// Yotpo installation guide: https://support.yotpo.com/en/article/bigcommerce-stencil-installing-yotpo-on-stencil
+
 var webSiteAdvantage = webSiteAdvantage || {};
 webSiteAdvantage.yotpoRichSnippets = webSiteAdvantage.yotpoRichSnippets  || [];
 
